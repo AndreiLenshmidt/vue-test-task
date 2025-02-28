@@ -2,10 +2,11 @@
 import { computed, onBeforeMount, provide, ref } from "vue";
 import ListItem from "./components/ListItem.vue";
 import ListItemCreate from "./components/ListItemCreate.vue";
-
+// Создаем пустой массив
 const ListItems = ref([]);
+// Провайдим массив записей (будет иджектится в ListItem.vue)
 provide("ListItems", ListItems);
-
+// На этапе до отрисовки списка проверяем есть ли у польвателя сохраненный список, если есть загружем, если нет создаем дефолтный
 onBeforeMount(() => {
   localStorage.getItem("ListItems")
     ? (ListItems.value = JSON.parse(localStorage.getItem("ListItems")))
@@ -19,13 +20,13 @@ onBeforeMount(() => {
       );
   ListItems.value = JSON.parse(localStorage.getItem("ListItems"));
 });
-
+// Создаем реактивную переменную для фильтрации
 const active = ref("allTask");
-
+// Создаем компьютед переменную для определения текущего id
 const currentId = computed(
-  () => ListItems.value[ListItems.value.length - 1].id
+  () => ListItems.value[ListItems.value.length - 1]?.id || 0
 );
-
+// Функция, создает новую задачу и добавляет ее в localStorage
 const createHandler = (text) => {
   ListItems.value.push({
     id: currentId.value + 1,
@@ -34,16 +35,16 @@ const createHandler = (text) => {
   });
   localStorage.setItem("ListItems", JSON.stringify(ListItems.value));
 };
-
+// Функция, принимает id и удаляет задачу из массива задач и из хранилища
 const deleteHandler = (id) => {
   ListItems.value = ListItems.value.filter((item) => item.id !== id);
   localStorage.setItem("ListItems", JSON.stringify(ListItems.value));
 };
-
+//Функция обработчик, устанавливает активный фильтр, в разметке на выбранном фильтре активируется класс 'active'
 const filterHandler = (e) => {
   if (e.target.id) active.value = e.target.id;
 };
-
+// Компьютед переменная в зависимости от значения активного фильтра возвращает список отфильтрованных задач
 const filteredListItems = computed(() => {
   if (active.value === "allTask") {
     return ListItems.value;
@@ -82,7 +83,7 @@ const filteredListItems = computed(() => {
       </div>
       <ul class="list">
         <ListItem
-          v-for="(item, index) in filteredListItems"
+          v-for="item in filteredListItems"
           :key="item.id"
           :item="item"
           @delete-item="deleteHandler(item.id)"

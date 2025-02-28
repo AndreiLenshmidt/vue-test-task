@@ -1,24 +1,30 @@
 <script setup>
 import { inject, ref, watch } from "vue";
-
+// Сохраняем переданные пропы в переменную, чтобы через watcher наблюдать за изменением статуса строка 19-24
 const props = defineProps(["item"]);
+// Обозначаем что компонент использует следующие эмиты
 defineEmits(["delete-item"]);
+// Создаем переменную для состояние редактирования записи
 const changeText = ref(false);
+// Функция переключатель состояния
 const handleClick = () => {
   changeText.value = !changeText.value;
 };
-
+// Инжектируем список задач из App.vue
 const ListItems = inject("ListItems");
-
+// Создаем наблюдатель за изменением значения кнопки переключения в режим редактирования. Т.е. запись состояния в localStorage происходит только после нажатия кнопки сохранить, а не после изменения каждого символа
 watch(changeText, (oldValue, newValue) => {
   if (oldValue === false && newValue === true) {
     localStorage.setItem("ListItems", JSON.stringify(ListItems.value));
   }
 });
-
-watch(props.item, () => {
-  localStorage.setItem("ListItems", JSON.stringify(ListItems.value));
-});
+// Создаем наблюдатель за чекбоксом, сохранияет состояние после преключения чекбокса
+watch(
+  () => props.item.status,
+  () => {
+    localStorage.setItem("ListItems", JSON.stringify(ListItems.value));
+  }
+);
 </script>
 
 <template>
